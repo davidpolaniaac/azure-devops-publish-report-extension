@@ -1,0 +1,81 @@
+{
+    "manifestVersion": 1,
+    "id": "publish-html-report",
+    "publisher": "dpolania",
+    "version": "1.0.286",
+    "name": "Publish HTML Report",
+    "description": "Publish result in formate HTML",
+    "categories": [
+        "Azure Pipelines"
+    ],
+    "targets": [{
+        "id": "Microsoft.VisualStudio.Services"
+    }],
+    "icons": {
+        "default": "static/logo.png"
+    },
+    "content": {
+        "details": {
+            "path": "static/overview.md"
+        }
+    },
+    "scopes": [
+        "vso.build",
+        "vso.release"
+    ],
+    "files": [{
+            "path": "static",
+            "addressable": true
+        },
+        {
+            "path": "websites/dist",
+            "addressable": true
+        },
+        {
+            "path": "tasks/publish-report/dist"
+        }
+    ],
+    "contributions": [{
+            "id": "publish-report-task",
+            "type": "ms.vss-distributed-task.task",
+            "targets": [
+                "ms.vss-distributed-task.tasks"
+            ],
+            "properties": {
+                "name": "tasks/publish-report/dist"
+            }
+        },
+        {
+            "id": "publish-report-release-info-tab",
+            "type": "ms.vss-web.tab",
+            "targets": [
+                "ms.vss-releaseManagement-web.release-environment-editor-tab"
+            ],
+            "includes": [
+                "ms.vss-tfs-web.tfs-page-data-service",
+                "ms.vss-features.host-navigation-service",
+                "ms.vss-features.extension-data-service",
+                "ms.vss-features.host-dialog-service"
+            ],
+            "properties": {
+                "name": "Reports",
+                "uri": "websites/dist/Release/Release.html",
+                "icon": "asset://static/logo.png",
+                "registeredObjectId": "registeredEnvironmentObject",
+                "dynamic": true
+            }
+        },
+        {
+            "id": "publish-report-build-info-tab",
+            "type": "ms.vss-build-web.build-results-tab",
+            "description": "A tab in build result",
+            "targets": [
+                "ms.vss-build-web.build-results-view"
+            ],
+            "properties": {
+                "name": "Reports",
+                "uri": "websites/dist/Build/Build.html"
+            }
+        }
+    ]
+}

@@ -1,0 +1,49 @@
+{
+    "name": "publish-html-report",
+    "version": "1.0.3",
+    "description": "web extension",
+    "keywords": [
+        "extensions",
+        "Azure DevOps",
+        "Visual Studio Team Services"
+    ],
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": ""
+    },
+    "scripts": {
+        "clean": "rimraf ./dist",
+        "compile": "npm run clean && webpack --mode production",
+        "compile:dev": "npm run clean && webpack --mode development",
+        "build": "npm run compile",
+        "build:dev": "npm run compile:dev",
+        "start": "webpack --mode production",
+        "start:dev": "webpack-dev-server --mode development"
+    },
+    "dependencies": {
+        "azure-devops-extension-api": "^1.157.0",
+        "azure-devops-extension-sdk": "^2.0.11",
+        "azure-devops-ui": "^2.166.2",
+        "react": "~16.8.1",
+        "react-dom": "~16.8.1"
+    },
+    "devDependencies": {
+        "@types/react": "~16.8.2",
+        "@types/react-dom": "~16.8.0",
+        "base64-inline-loader": "^1.1.1",
+        "copy-webpack-plugin": "^4.5.4",
+        "css-loader": "~1.0.0",
+        "file-loader": "~2.0.0",
+        "node-sass": "~4.12.0",
+        "rimraf": "~2.6.2",
+        "sass-loader": "~7.1.0",
+        "style-loader": "~0.23.1",
+        "react-hot-loader": "^4.3.4",
+        "ts-loader": "~5.2.2",
+        "typescript": "^3.8.3",
+        "webpack": "^4.22.0",
+        "webpack-cli": "^3.3.0",
+        "webpack-dev-server": "^3.8.0"
+    }
+}

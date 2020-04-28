@@ -1,0 +1,39 @@
+steps:
+  - task: ms-devlabs.vsts-developer-tools-build-tasks.tfx-installer-build-task.TfxInstaller@1
+    displayName: "Install tfx-cli"
+    inputs:
+      version: v0.7.x
+
+  - task: ms-devlabs.vsts-developer-tools-build-tasks.package-extension-build-task.PackageVSTSExtension@1
+    displayName: "Package Extension"
+    inputs:
+      rootFolder: "$(System.DefaultWorkingDirectory)"
+      outputPath: "$(Build.StagingDirectory)"
+      publisherId: "$(Extension.Publisher)"
+      extensionId: "$(Extension.Id)"
+      extensionName: "$(Extension.Name)"
+      extensionVersion: "$(Extension.Version)"
+      updateTasksVersion: true
+      extensionVisibility: private
+      extensionPricing: free
+
+  - task: PublishBuildArtifacts@1
+    displayName: "Publish Artifact to VSTS"
+    inputs:
+      PathtoPublish: $(build.artifactstagingdirectory)
+      ArtifactName: Artifact
+
+  - task: ArtifactoryGenericUpload@1
+    displayName: "Publish Artifact to Artifactory"
+    inputs:
+      artifactoryService: "Artifactory"
+      fileSpec: |
+        {
+          "files": [
+            {
+              "pattern": "$(Build.StagingDirectory)/$(Extension.Publisher).$(Extension.Id)-$(Extension.Version).vsix",
+              "target": "$(Artifactory.Repository)/$(Build.BuildNumber)/"
+            }
+          ]
+        }
+      collectBuildInfo: true

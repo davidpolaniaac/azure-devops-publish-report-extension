@@ -1,0 +1,32 @@
+{
+    "name": "publish-report",
+    "version": "1.0.0",
+    "description": "extension to publish reports",
+    "main": "index.js",
+    "scripts": {
+        "postinstall": "node scripts/install.js",
+        "prebuild": "node scripts/install.js",
+        "build": "node scripts/build.js",
+        "package": "node scripts/package.js",
+        "create": "tfx extension create --output-path dist --overrides-file config/release.json --rev-version",
+        "create:dev": "tfx extension create --output-path dist --overrides-file config/dev.json --rev-version",
+        "test": "npm t --prefix=tests"
+    },
+    "keywords": [
+        "azure",
+        "devops",
+        "pipelines",
+        "politics"
+    ],
+    "author": "David Polania",
+    "license": "ISC",
+    "devDependencies": {
+        "tfx-cli": "^0.7.1",
+        "edit-json-file": "^1.1.0",
+        "command-line-args": "^5.0.2",
+        "command-line-usage": "^5.0.5",
+        "compare-versions": "^3.4.0",
+        "assert": "^1.4.1",
+        "rimraf": "^2.6.2"
+    }
+}

@@ -1,0 +1,16 @@
+variables:
+  - group: azure devops - extension - production
+  - name: author
+    value: "$(Extension.Author)"
+  - name: helpMarkDown
+    value: "$(Build.BuildNumber)"
+  - name: tags.0
+    value: "$(Build.BuildNumber)"
+  - name: Extension.Version
+    value: "1.0.0"
+  - name: Extension.Id
+    value: "pipelines-policies"
+  - name: Extension.Name
+    value: "Pipelines Policies"
+  - name: Artifactory.Repository
+    value: "$(Extension.Repository)/$(Extension.Id)"

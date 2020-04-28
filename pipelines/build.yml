@@ -1,0 +1,62 @@
+steps:
+  - task: FileTransform@1
+    displayName: "File Transform extension"
+    inputs:
+      folderPath: "$(System.DefaultWorkingDirectory)"
+      fileType: json
+      targetFiles: |
+        tasks/**/task.json
+        vss-extension.json
+
+  - task: SonarSource.sonarqube.15B84CA1-B62F-4A2A-A403-89B77A063157.SonarQubePrepare@4
+    displayName: "Prepare analysis on SonarQube"
+    inputs:
+      SonarQube: SonarQube
+      scannerMode: CLI
+      configMode: manual
+      cliProjectKey: "$(Build.Repository.Name)"
+      cliProjectName: "$(Build.Repository.Name)"
+      cliProjectVersion: "$(Build.BuildNumber)"
+      cliSources: "$(System.DefaultWorkingDirectory)"
+      extraProperties: |
+        sonar.projectBaseDir=$(System.DefaultWorkingDirectory)
+        sonar.exclusions=node_modules/**,coverage/**,examples/**,docs/**,reports/**,**/node_modules/**,**/*.js
+        sonar.sources=.
+        #sonar.sourceEncoding=UTF-8
+        #sonar.tests=src
+        #sonar.test.inclusions=**/*.test.ts
+        #sonar.testExecutionReportPaths=test-reports/test-reporter.xml
+        #sonar.typescript.lcov.reportPaths=coverage/lcov.info
+        #sonar.coverage.exclusions=test/**,*.test.ts,**/*.test.ts
+        sonar.branch.name=$(Build.SourceBranchName)
+
+  - task: Npm@1
+    displayName: "Install"
+    inputs:
+      command: "install"
+      workingDir: "$(System.DefaultWorkingDirectory)"
+      verbose: false
+
+  - task: Npm@1
+    displayName: "Build"
+    inputs:
+      command: custom
+      workingDir: "$(System.DefaultWorkingDirectory)"
+      verbose: false
+      customCommand: run build
+
+  - task: SonarSource.sonarqube.6D01813A-9589-4B15-8491-8164AEB38055.SonarQubeAnalyze@4
+    displayName: "Run Code Analysis"
+
+  - task: SimondeLang.sonar-buildbreaker.sonar-buildbreaker.sonar-buildbreaker@8
+    displayName: "Breaker build"
+    inputs:
+      SonarQube: SonarQube
+
+  - task: Npm@1
+    displayName: "Package"
+    inputs:
+      command: custom
+      workingDir: "$(System.DefaultWorkingDirectory)"
+      verbose: false
+      customCommand: run package
