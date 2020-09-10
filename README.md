@@ -79,3 +79,23 @@ The sample `release.json` file lists parameter values to configure the extension
 ```
 
 **Note**: For information on generating your extension, refer to [Create extension](https://docs.microsoft.com/en-us/azure/devops/extend/develop/add-build-task?view=azure-devops).
+
+# Configuration
+
+## Classic release
+
+![](static/pipeline.png)
+
+## Pipeline as code
+
+```
+steps:
+- task: publish-report-html@0
+  displayName: 'Publish Report'
+  inputs:
+    reportName: 'Security Test'
+    htmlPath: '$(System.DefaultWorkingDirectory)/result/index.html'
+```
+# Result
+
+![](static/tab.png)
