@@ -21,7 +21,7 @@
     "author": "David Polania",
     "license": "ISC",
     "devDependencies": {
-        "tfx-cli": "^0.7.1",
+        "tfx-cli": "^0.12.0",
         "edit-json-file": "^1.1.0",
         "command-line-args": "^5.0.2",
         "command-line-usage": "^5.0.5",
