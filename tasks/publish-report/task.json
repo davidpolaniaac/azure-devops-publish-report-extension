@@ -16,7 +16,7 @@
     "version": {
         "Major": 0,
         "Minor": 0,
-        "Patch": 61
+        "Patch": 62
     },
     "instanceNameFormat": "Publish Report",
     "inputs": [{
@@ -37,7 +37,7 @@
             "label": "Path of the artifact *.html",
             "defaultValue": "*.*",
             "required": true,
-            "helpMarkDown": "Path to the artifact to be uploaded.The path can include one artifact of type using the *.html , *.htm , etc."
+            "helpMarkDown": "Path to the artifact to be uploaded.The path can include one artifact of type using the *.html, *.htm, etc. You can also upload multiple reports separated by commas."
         }
     ],
     "execution": {

@@ -43,15 +43,14 @@ async function saveReport(html: string, inputReportName: string, reportNameRando
 }
 
 async function run() {
-
     try {
-
-        const reportNameRandom: string = String(Date.now());
-        const inputPathReport: string = tl.getInput('htmlPath', true) as string;
+        const paths: string[] = tl.getDelimitedInput('htmlPath',',', true);
         const inputReportName: string = tl.getInput('reportName', true) as string;
-        const html = await createReport(inputPathReport);
-        await saveReport(html, inputReportName.trim(), reportNameRandom);
-
+        for (const path of paths) {
+            const reportNameRandom: string = String(Date.now());
+            const html = await createReport(path);
+            await saveReport(html, inputReportName.trim(), reportNameRandom);
+        }
     } catch (error) {
         tl.error(error.message);
         tl.setResult(tl.TaskResult.Failed, 'Execution error');
