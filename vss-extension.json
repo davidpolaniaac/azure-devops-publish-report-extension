@@ -2,7 +2,7 @@
     "manifestVersion": 1,
     "id": "publish-html-report",
     "publisher": "dpolania",
-    "version": "1.0.286",
+    "version": "1.0.287",
     "name": "Publish HTML Report",
     "description": "Publish result in formate HTML",
     "categories": [
