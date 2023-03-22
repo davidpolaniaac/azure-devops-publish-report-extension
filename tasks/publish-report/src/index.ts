@@ -42,14 +42,20 @@ async function saveReport(html: string, inputReportName: string, reportNameRando
     }
 }
 
+function getName(name:string, index: number, size: number): string {
+    const fixName: string = name.trim();
+    return size > 1 ? `${index}-${fixName}`: fixName;
+}
+
 async function run() {
     try {
         const paths: string[] = tl.getDelimitedInput('htmlPath',',', true);
         const inputReportName: string = tl.getInput('reportName', true) as string;
-        for (const path of paths) {
+        for (const [index, value] of paths.entries()) {
             const reportNameRandom: string = String(Date.now());
-            const html = await createReport(path);
-            await saveReport(html, inputReportName.trim(), reportNameRandom);
+            const html = await createReport(value);
+            const name: string = getName(inputReportName, index, paths.length);
+            await saveReport(html, name, reportNameRandom);
         }
     } catch (error) {
         tl.error(error.message);
