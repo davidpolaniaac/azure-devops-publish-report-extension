@@ -9,14 +9,12 @@
         "Release",
         "Build"
     ],
-    "demands": [
-        "npm"
-    ],
+    "demands": [],
     "author": "dpolania",
     "version": {
         "Major": 0,
         "Minor": 0,
-        "Patch": 63
+        "Patch": 64
     },
     "instanceNameFormat": "Publish Report",
     "inputs": [{

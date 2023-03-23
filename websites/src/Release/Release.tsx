@@ -1,17 +1,19 @@
 import "./Release.scss";
+
 import * as React from "react";
 import * as SDK from "azure-devops-extension-sdk";
+
 import { CommonServiceIds, IProjectPageService, getClient } from "azure-devops-extension-api";
-import { ReleaseRestClient, ReleaseTaskAttachment } from "azure-devops-extension-api/Release";
 import { Header, TitleSize } from "azure-devops-ui/Header";
+import { MessageCard, MessageCardSeverity } from "azure-devops-ui/MessageCard";
+import { ReleaseRestClient, ReleaseTaskAttachment } from "azure-devops-extension-api/Release";
+import { Spinner, SpinnerSize } from "azure-devops-ui/Spinner";
+import { Surface, SurfaceBackground } from "azure-devops-ui/Surface";
+import { Tab, TabBar, TabSize } from "azure-devops-ui/Tabs";
+
+import { Card } from "azure-devops-ui/Card";
 import { IHeaderCommandBarItem } from "azure-devops-ui/HeaderCommandBar";
 import { Page } from "azure-devops-ui/Page";
-import { Spinner, SpinnerSize } from "azure-devops-ui/Spinner";
-import { Tab, TabBar, TabSize } from "azure-devops-ui/Tabs";
-import { Surface, SurfaceBackground } from "azure-devops-ui/Surface";
-import { Card } from "azure-devops-ui/Card";
-import { MessageCard, MessageCardSeverity } from "azure-devops-ui/MessageCard";
-
 import { showRootComponent } from "../Common";
 
 interface ItemReport {
@@ -22,6 +24,7 @@ interface ItemReport {
     content?: string;
     timelineId?: string;
     friendlyName?: string;
+    code?: string;
 }
 
 interface IEnvironment {
@@ -118,7 +121,8 @@ class ReportContent extends React.Component<{}, IReportContentState> {
                             planId: planId,
                             name: attachment.name,
                             timelineId: attachment.timelineId,
-                            friendlyName: attachment.name.endsWith(".html") ? attachment.name.slice(0, -5): attachment.name
+                            friendlyName: attachment.name.endsWith(".html") ? attachment.name.slice(0, -5): attachment.name,
+                            code: window.btoa(`${attachment.recordId}${attachment.name}`)
                         }
                         items.push(item);
                     });
@@ -126,7 +130,7 @@ class ReportContent extends React.Component<{}, IReportContentState> {
 
                 if (items.length > 0) {
                     const item = await this.downloadItem(items[0], enviroment);
-                    this.setState({ selectedTabRecordId: String(items[0].recordId) });
+                    this.setState({ selectedTabRecordId: String(items[0].code) });
                     this.setState({ items: items });
                     this.setState({ item: item });
                 } else {
@@ -164,7 +168,7 @@ class ReportContent extends React.Component<{}, IReportContentState> {
                         tabSize={useCompactPivots ? TabSize.Compact : TabSize.Tall}>
 
 
-                        {items ? items.map((item) => <Tab name={item.friendlyName} id={item.recordId as string} key={item.recordId} />) : <></>}
+                        {items ? items.map((item) => <Tab name={item.friendlyName} id={item.code as string} key={item.code} />) : <></>}
 
                     </TabBar>
 
@@ -202,10 +206,10 @@ class ReportContent extends React.Component<{}, IReportContentState> {
     }
 
 
-    private updateItem = async (recordId: string) => {
+    private updateItem = async (code: string) => {
         const { items, environment } = this.state;
-        const item = (items as ItemReport[]).find(x => x.recordId == recordId);
-        const itemIndex = (items as ItemReport[]).findIndex((x => x.recordId == recordId));
+        const item = (items as ItemReport[]).find(x => x.code == code);
+        const itemIndex = (items as ItemReport[]).findIndex((x => x.code == code));
 
         if (environment && items && !items[itemIndex].content) {
 
