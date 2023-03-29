@@ -42,7 +42,8 @@ async function saveReport(html: string, inputReportName: string, reportNameRando
     }
 }
 
-function getName(name:string, index: number, size: number): string {
+function getName(names:string[], index: number, size: number): string {
+    const name: string = names[index]? names[index]: names[0];
     const fixName: string = name.trim();
     return size > 1 ? `${index}-${fixName}`: fixName;
 }
@@ -50,11 +51,11 @@ function getName(name:string, index: number, size: number): string {
 async function run() {
     try {
         const paths: string[] = tl.getDelimitedInput('htmlPath',',', true);
-        const inputReportName: string = tl.getInput('reportName', true) as string;
+        const names: string[] = tl.getDelimitedInput('reportName',',', true);
         for (const [index, value] of paths.entries()) {
             const reportNameRandom: string = String(Date.now());
             const html = await createReport(value);
-            const name: string = getName(inputReportName, index, paths.length);
+            const name: string = getName(names, index, paths.length);
             await saveReport(html, name, reportNameRandom);
         }
     } catch (error) {

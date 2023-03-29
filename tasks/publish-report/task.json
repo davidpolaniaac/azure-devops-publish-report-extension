@@ -14,7 +14,7 @@
     "version": {
         "Major": 0,
         "Minor": 0,
-        "Patch": 64
+        "Patch": 65
     },
     "instanceNameFormat": "Publish Report",
     "inputs": [{
@@ -23,9 +23,9 @@
             "label": "Report Name",
             "defaultValue": "Test results",
             "required": true,
-            "helpMarkDown": "Name to the artifact to be uploaded.",
+            "helpMarkDown": "Name to the artifact to be uploaded. You can also upload multiple reports separated by commas",
             "validation": {
-                "expression": "isMatch(value,'^(?:[A-Za-z]+)(?:[A-Za-z0-9 _-]*)$','IgnoreCase')",
+                "expression": "isMatch(value,'^(?:[A-Za-z]+)(?:[A-Za-z0-9 ,_-]*)$','IgnoreCase')",
                 "message": "type a name for the report"
             }
         },
