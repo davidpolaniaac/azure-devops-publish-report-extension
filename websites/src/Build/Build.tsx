@@ -8,12 +8,10 @@ import { CommonServiceIds, IProjectPageService, getClient } from "azure-devops-e
 import { Header, TitleSize } from "azure-devops-ui/Header";
 import { MessageCard, MessageCardSeverity } from "azure-devops-ui/MessageCard";
 import { Spinner, SpinnerSize } from "azure-devops-ui/Spinner";
-import { Surface, SurfaceBackground } from "azure-devops-ui/Surface";
 import { Tab, TabBar, TabSize } from "azure-devops-ui/Tabs";
 
 import { Card } from "azure-devops-ui/Card";
 import { IHeaderCommandBarItem } from "azure-devops-ui/HeaderCommandBar";
-import { Page } from "azure-devops-ui/Page";
 import { showRootComponent } from "../Common";
 
 interface ItemReport {
@@ -59,10 +57,10 @@ class ReportContent extends React.Component<{}, IReportContentState> {
         };
     }
 
-    public componentDidMount() {
+    public async componentDidMount() {
 
-        SDK.init();
-        this.initializeState();
+        SDK.init({ loaded: false });
+        await this.initializeState();
     }
 
     private async getBuild(configuration: any): Promise<any> {
@@ -85,17 +83,16 @@ class ReportContent extends React.Component<{}, IReportContentState> {
                 const build = await this.getBuild(configuration);
 
                 const buildRestClient = getClient(BuildRestClient);
-                console.log(build);
-                const enviroment: IEnvironment = {
+                const environment: IEnvironment = {
                     project: project.id,
                     buildId: build.id,
                     name: build.definition.name
                 }
 
-                this.setState({ environment: enviroment });
+                this.setState({ environment: environment });
 
                 const items: ItemReport[] = [];
-                const attachments: Attachment[] = await buildRestClient.getAttachments(enviroment.project, enviroment.buildId, 'publish-report');
+                const attachments: Attachment[] = await buildRestClient.getAttachments(environment.project, environment.buildId, 'publish-report');
 
                 attachments.forEach(attachment => {
 
@@ -113,7 +110,7 @@ class ReportContent extends React.Component<{}, IReportContentState> {
                         recordId: recordId,
                         timelineId: timelineId,
                         name: name,
-                        friendlyName: (name as string).endsWith(".html") ? (name as string).slice(0, -5): name,
+                        friendlyName: (name as string).endsWith(".html") ? (name as string).slice(0, -5) : name,
                         code: window.btoa(`${recordId}${name}`)
 
                     }
@@ -121,82 +118,87 @@ class ReportContent extends React.Component<{}, IReportContentState> {
                 });
 
                 if (items.length > 0) {
-                    const item = await this.downloadItem(items[0], enviroment);
+                    const item = await this.downloadItem(items[0], environment);
                     this.setState({ selectedTabRecordId: String(items[0].code) });
                     this.setState({ items: items });
                     this.setState({ item: item });
+                    SDK.notifyLoadSucceeded();
                 } else {
-                    console.log(" ¡ The report was not found !");
                     this.setState({ message: " ¡ The report was not found !" });
                 }
             }
 
         } catch (error) {
-            console.error("Error : ", error.message);
             this.setState({ message: error.message });
+            SDK.notifyLoadFailed("No HTML report found..");
         }
 
         this.setState({ loading: false });
-
     }
 
     public render(): JSX.Element {
 
         const { loading, selectedTabRecordId, headerDescription, useCompactPivots, useLargeTitle, items, environment, message, item } = this.state;
 
-
         return (
-            <Surface background={SurfaceBackground.neutral}>
-                <Page className="report-page flex-grow">
+            <section className="page-content">
+                <Header
+                    className="header"
+                    title={environment?.name}
+                    commandBarItems={this.getCommandBarItems()}
+                    description={headerDescription}
+                    titleSize={useLargeTitle ? TitleSize.Large : TitleSize.Medium} />
 
-                    <Header title={environment?.name}
-                        commandBarItems={this.getCommandBarItems()}
-                        description={headerDescription}
-                        titleSize={useLargeTitle ? TitleSize.Large : TitleSize.Medium} />
+                <TabBar
+                    disableSticky={true}
+                    tabsClassName="tabBar"
+                    onSelectedTabChanged={this.onSelectedTabChanged}
+                    selectedTabId={selectedTabRecordId}
+                    tabSize={useCompactPivots ? TabSize.Compact : TabSize.Tall}>
 
-                    <TabBar
-                        onSelectedTabChanged={this.onSelectedTabChanged}
-                        selectedTabId={selectedTabRecordId}
-                        tabSize={useCompactPivots ? TabSize.Compact : TabSize.Tall}>
+                    {items ? items.map((item) => <Tab name={item.friendlyName} id={item.code as string} key={item.code} />) : <></>}
 
-                        {items ? items.map((item) => <Tab name={item.friendlyName} id={item.code as string} key={item.code} />) : <></>}
+                </TabBar>
 
-                    </TabBar>
+                <Card
+                    className="container-frame flex-grow"
+                    contentProps={{ contentPadding: false }}
+                >
+                    {
+                        loading ?
+                            <Spinner className="flex-grow" size={SpinnerSize.large} label={message} />
+                            : item && item.content ?
+                                <iframe
+                                    id="iframe-report"
+                                    className="frame"
+                                    frameBorder="0"
+                                    src={this.getGeneratedPageURL(item?.content)}
+                                    onLoad={this.adjustIframeHeight}
+                                /> :
 
-                    <div className="page-content page-content-top flex-grow container">
+                                <MessageCard
+                                    className="flex-grow"
+                                    severity={MessageCardSeverity.Warning}
+                                >
+                                    {message}
+                                </MessageCard>
+                    }
 
-
-                        <Card
-                            className="flex-grow bolt-card-no-vertical-padding test"
-                            contentProps={{ contentPadding: false }}
-                        >
-                            {
-                                loading ?
-                                    <Spinner className="flex-grow" size={SpinnerSize.large} label={message} />
-                                    : item && item.content ?
-                                        <iframe
-                                            className="flex-grow"
-                                            frameBorder="0"
-                                            srcDoc={item?.content}
-                                        /> :
-
-                                        <MessageCard
-                                            className="flex-grow"
-                                            severity={MessageCardSeverity.Warning}
-                                        >
-                                            {message}
-                                        </MessageCard>
-                            }
-
-                        </Card>
-
-                    </div>
-                </Page>
-            </Surface>
+                </Card>
+            </section>
         );
 
     }
 
+    private adjustIframeHeight = () => {
+        const iframe: any = document.getElementById("iframe-report");
+        iframe.style.height = iframe.contentWindow.document.body.scrollHeight + 'px';
+    };
+
+    private getGeneratedPageURL(html: string): string {
+        const blob = new Blob([html], { type: "text/html" })
+        return URL.createObjectURL(blob);
+    }
 
     private updateItem = async (code: string) => {
         const { items, environment } = this.state;
@@ -207,7 +209,7 @@ class ReportContent extends React.Component<{}, IReportContentState> {
 
             const item = await this.downloadItem(items[itemIndex], environment);;
             return item;
-            
+
         } else {
             return item;
         }
@@ -240,7 +242,7 @@ class ReportContent extends React.Component<{}, IReportContentState> {
             {
                 id: "download",
                 text: "Download",
-                onActivate: () => { item && item.url ? window.open(item?.url, "_blank"): undefined },
+                onActivate: () => { item && item.url ? window.open(item?.url, "_blank") : undefined },
                 iconProps: {
                     iconName: 'Download'
                 },

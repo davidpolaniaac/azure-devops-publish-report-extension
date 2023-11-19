@@ -2,7 +2,7 @@
     "manifestVersion": 1,
     "id": "publish-html-report",
     "publisher": "dpolania",
-    "version": "1.0.290",
+    "version": "1.0.305",
     "name": "Publish HTML Report",
     "description": "Publish result in formate HTML",
     "categories": [
@@ -74,7 +74,10 @@
             ],
             "properties": {
                 "name": "Reports",
-                "uri": "websites/dist/Build/Build.html"
+                "uri": "websites/dist/Build/Build.html",
+                "supportsTasks": [
+                    "13008e5e-9195-4043-9baf-c5d70da839e3"
+                ]
             }
         }
     ]

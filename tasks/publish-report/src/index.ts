@@ -27,37 +27,82 @@ async function createReport(path: string): Promise<any> {
     });
 }
 
-async function saveReport(html: string, inputReportName: string, reportNameRandom: string) {
+async function saveReport(html: string, inputReportName: string) {
 
     try {
-
-        banner("Save a report in pipeline");
-        const SYSTEM_DEFAULTWORKINGDIRECTORY = tl.getVariable("SYSTEM_DEFAULTWORKINGDIRECTORY");
-        tl.writeFile(`${SYSTEM_DEFAULTWORKINGDIRECTORY}/${reportNameRandom}.html`, html, 'utf8');
-        tl.addAttachment('publish-report', `${inputReportName}.html`, `${SYSTEM_DEFAULTWORKINGDIRECTORY}/${reportNameRandom}.html`);
-        heading("¡ report has been saved successfully in pipeline !");
-
+        const tempDirectory = tl.getVariable("Agent.TempDirectory");
+        const reportNameRandom: string = String(Date.now());
+        tl.writeFile(`${tempDirectory}/${reportNameRandom}.html`, html, 'utf8');
+        tl.addAttachment('publish-report', `${inputReportName}.html`, `${tempDirectory}/${reportNameRandom}.html`);
     } catch (error) {
         throw new Error(error.message);
     }
 }
 
-function getName(names:string[], index: number, size: number): string {
-    const name: string = names[index]? names[index]: names[0];
-    const fixName: string = name.trim();
-    return size > 1 ? `${index}-${fixName}`: fixName;
+function handleFailedResult(errorMessage: string): never {
+    tl.setResult(tl.TaskResult.Failed, errorMessage, true);
+    throw new Error(errorMessage);
+}
+
+function handleSuccessResult(result: string[]): string[] {
+    console.log(`Found ${result.length} reports.`);
+    console.log(result);
+    return result;
+}
+
+function isURL(path: string): boolean {
+    return /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/.test(path);
+}
+
+function findReports(reportPattern: string): string[] {
+    if (reportPattern.length === 0) {
+        handleFailedResult("Report filepath cannot be empty. Please provide a path to the report.");
+    }
+
+    if (isURL(reportPattern)) {
+        return handleSuccessResult([reportPattern]);
+    }
+
+    try {
+        tl.checkPath(reportPattern, 'path');
+        return handleSuccessResult([reportPattern]);
+    } catch (error) {
+        console.log(`Path validation: ${reportPattern}`);
+    }
+
+    const reportPaths: string[] = tl.findMatch(tl.getVariable("Agent.BuildDirectory") || process.cwd(), reportPattern);
+
+    if (!reportPaths || reportPaths.length === 0) {
+        handleFailedResult(`No reports found with filepath pattern ${reportPattern}`);
+    }
+
+    return handleSuccessResult(reportPaths);
 }
 
 async function run() {
     try {
-        const paths: string[] = tl.getDelimitedInput('htmlPath',',', true);
-        const names: string[] = tl.getDelimitedInput('reportName',',', true);
-        for (const [index, value] of paths.entries()) {
-            const reportNameRandom: string = String(Date.now());
-            const html = await createReport(value);
-            const name: string = getName(names, index, paths.length);
-            await saveReport(html, name, reportNameRandom);
+        const paths: string[] = tl.getDelimitedInput('htmlPath', ',', true);
+        const names: string[] = tl.getDelimitedInput('reportName', ',', true);
+        banner("Save a report in pipeline");
+        for (const [index, path] of paths.entries()) {
+            const subPaths: string[] = findReports(path);
+            for (const [subIndex, subPath] of subPaths.entries()) {
+                const html = await createReport(subPath);
+                let name: string = "";
+                const baseName: string = names[index] ? names[index] : "Report";
+                if (paths.length > 1 && subPaths.length > 1) {
+                    name = `${index + 1}.${subIndex + 1}-${baseName}`
+                } else if (paths.length <= 1 && subPaths.length > 1) {
+                    name = `${subIndex + 1}-${baseName}`
+                } else {
+                    name = baseName;
+                }
+                await saveReport(html, name.trim());
+                console.info("Uploading report " + subPath + " - " + subIndex + 1 + " of " + subPaths.length);
+            }
+            tl.setProgress(index + 1 / paths.length * 100, "Uploading reports")
         }
+        heading("Report has been saved successfully in pipeline !");
     } catch (error) {
         tl.error(error.message);
         tl.setResult(tl.TaskResult.Failed, 'Execution error');

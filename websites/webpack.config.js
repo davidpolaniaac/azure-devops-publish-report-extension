@@ -14,13 +14,20 @@ module.exports = {
     entry: entries,
     output: {
         filename: "[name]/[name].js",
-        publicPath: "/dist/"
+        publicPath: "/websites/dist/"
     },
     devtool: "inline-source-map",
     devServer: {
         https: true,
         port: 3000,
-        publicPath: '/websites/dist/'
+        proxy: {
+            '/websites': {
+              target: 'https://localhost:3000',  // La URL base de tu servidor API
+              pathRewrite: {'^/websites': ''},
+              changeOrigin: true,
+              secure: false,
+            },
+          },
     },
     resolve: {
         extensions: [".ts", ".tsx", ".js"],

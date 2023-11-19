@@ -14,7 +14,7 @@
     "version": {
         "Major": 0,
         "Minor": 0,
-        "Patch": 65
+        "Patch": 73
     },
     "instanceNameFormat": "Publish Report",
     "inputs": [{
@@ -33,13 +33,16 @@
             "name": "htmlPath",
             "type": "string",
             "label": "Path of the artifact *.html",
-            "defaultValue": "*.*",
+            "defaultValue": "**/index.html",
             "required": true,
-            "helpMarkDown": "Path to the artifact to be uploaded.The path can include one artifact of type using the *.html, *.htm, etc. You can also upload multiple reports separated by commas."
+            "helpMarkDown": "Path to the artifact to be uploaded.The path can include one artifact of type using the *.html, *.htm, etc. You can also upload multiple reports separated by commas. Supports wildcard"
         }
     ],
     "execution": {
         "Node10": {
+            "target": "index.js"
+        },
+        "Node16": {
             "target": "index.js"
         }
     }

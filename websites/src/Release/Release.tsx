@@ -8,12 +8,10 @@ import { Header, TitleSize } from "azure-devops-ui/Header";
 import { MessageCard, MessageCardSeverity } from "azure-devops-ui/MessageCard";
 import { ReleaseRestClient, ReleaseTaskAttachment } from "azure-devops-extension-api/Release";
 import { Spinner, SpinnerSize } from "azure-devops-ui/Spinner";
-import { Surface, SurfaceBackground } from "azure-devops-ui/Surface";
 import { Tab, TabBar, TabSize } from "azure-devops-ui/Tabs";
 
 import { Card } from "azure-devops-ui/Card";
 import { IHeaderCommandBarItem } from "azure-devops-ui/HeaderCommandBar";
-import { Page } from "azure-devops-ui/Page";
 import { showRootComponent } from "../Common";
 
 interface ItemReport {
@@ -133,15 +131,15 @@ class ReportContent extends React.Component<{}, IReportContentState> {
                     this.setState({ selectedTabRecordId: String(items[0].code) });
                     this.setState({ items: items });
                     this.setState({ item: item });
+                    SDK.notifyLoadSucceeded();
                 } else {
-                    console.log(" ¡ The report was not found !");
                     this.setState({ message: " ¡ The report was not found !" });
                 }
             }
 
         } catch (error) {
-            console.error("Error : ", error.message);
             this.setState({ message: error.message });
+            SDK.notifyLoadFailed("No HTML report found..");
         }
 
         this.setState({ loading: false });
@@ -154,28 +152,28 @@ class ReportContent extends React.Component<{}, IReportContentState> {
 
 
         return (
-            <Surface background={SurfaceBackground.neutral}>
-                <Page className="report-page flex-grow">
+                <section className="page-content">
 
-                    <Header title={environment?.name}
+                    <Header 
+                        className="header"
+                        title={environment?.name}
                         commandBarItems={this.getCommandBarItems()}
                         description={headerDescription}
                         titleSize={useLargeTitle ? TitleSize.Large : TitleSize.Medium} />
 
                     <TabBar
+                        disableSticky={true}
+                        tabsClassName="tabBar"
                         onSelectedTabChanged={this.onSelectedTabChanged}
                         selectedTabId={selectedTabRecordId}
                         tabSize={useCompactPivots ? TabSize.Compact : TabSize.Tall}>
-
 
                         {items ? items.map((item) => <Tab name={item.friendlyName} id={item.code as string} key={item.code} />) : <></>}
 
                     </TabBar>
 
-                    <div className="page-content page-content-top flex-grow container">
-
                         <Card
-                            className="flex-grow bolt-card-no-vertical-padding test"
+                            className="container-frame flex-grow"
                             contentProps={{ contentPadding: false }}
                         >
                             {
@@ -183,9 +181,11 @@ class ReportContent extends React.Component<{}, IReportContentState> {
                                     <Spinner className="flex-grow" size={SpinnerSize.large} label={message} />
                                     : item && item.content ?
                                         <iframe
-                                            className="flex-grow"
+                                            id="iframe-report"
+                                            className="frame"
                                             frameBorder="0"
                                             srcDoc={item?.content}
+                                            onLoad={this.adjustIframeHeight}
                                         /> :
 
                                         <MessageCard
@@ -197,13 +197,15 @@ class ReportContent extends React.Component<{}, IReportContentState> {
                             }
 
                         </Card>
-
-                    </div>
-                </Page>
-            </Surface>
+            </section>
         );
 
     }
+
+    private adjustIframeHeight = () => {
+        const iframe: any = document.getElementById("iframe-report");
+        iframe.style.height = iframe.contentWindow.document.body.scrollHeight + 'px';
+    };
 
 
     private updateItem = async (code: string) => {
