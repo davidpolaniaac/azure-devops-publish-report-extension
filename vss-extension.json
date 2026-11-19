@@ -1,16 +1,18 @@
 {
     "manifestVersion": 1,
     "id": "publish-html-report",
-    "publisher": "dpolania",
-    "version": "1.0.305",
+    "publisher": "david",
+    "version": "1.0.312",
     "name": "Publish HTML Report",
     "description": "Publish result in formate HTML",
     "categories": [
         "Azure Pipelines"
     ],
-    "targets": [{
-        "id": "Microsoft.VisualStudio.Services"
-    }],
+    "targets": [
+        {
+            "id": "Microsoft.VisualStudio.Services"
+        }
+    ],
     "icons": {
         "default": "static/logo.png"
     },
@@ -23,7 +25,8 @@
         "vso.build",
         "vso.release"
     ],
-    "files": [{
+    "files": [
+        {
             "path": "static",
             "addressable": true
         },
@@ -35,7 +38,8 @@
             "path": "tasks/publish-report/dist"
         }
     ],
-    "contributions": [{
+    "contributions": [
+        {
             "id": "publish-report-task",
             "type": "ms.vss-distributed-task.task",
             "targets": [

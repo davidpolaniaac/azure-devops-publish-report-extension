@@ -1,6 +1,6 @@
 {
     "id": "publish-html-report-dev",
     "public": false,
-    "publisher": "dpolania",
+    "publisher": "david",
     "baseUri": "https://localhost:3000"
 }

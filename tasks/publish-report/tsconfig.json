@@ -5,13 +5,9 @@
     "strict": true,
     "outDir": "dist/",
     "rootDir": "src/",
-    "types": [
-      "node",
-      "q"
-    ],
-    "esModuleInterop": true
+    "types": ["node", "q"],
+    "esModuleInterop": true,
+    "useUnknownInCatchVariables": false
   },
-  "include": [
-    "src/index.ts"
-  ],
+  "include": ["src/index.ts"]
 }

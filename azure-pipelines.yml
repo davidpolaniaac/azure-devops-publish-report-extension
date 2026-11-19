@@ -1,7 +1,19 @@
 name: $(Build.SourceBranchName).$(date:yyyyMMdd)$(rev:.r)
 
 variables:
-  - template: pipelines/vars.yml
+  - group: azure devops - extension - production
+  - name: author
+    value: "$(Extension.Author)"
+  - name: helpMarkDown
+    value: "$(Build.BuildNumber)"
+  - name: tags.0
+    value: "$(Build.BuildNumber)"
+  - name: Extension.Version
+    value: "1.0.0"
+  - name: Extension.Id
+    value: "pipelines-policies"
+  - name: Extension.Name
+    value: "Pipelines Policies"
 
 trigger:
   branches:
@@ -20,7 +32,84 @@ queue:
     - npm
 
 steps:
-  - template: pipelines/build.yml
+steps:
+  - task: FileTransform@1
+    displayName: "File Transform extension"
+    inputs:
+      folderPath: "$(System.DefaultWorkingDirectory)"
+      fileType: json
+      targetFiles: |
+        tasks/**/task.json
+        vss-extension.json
 
-  - ${{ if  eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
-      - template: pipelines/deploy.yml
+  - task: SonarQubePrepare@7
+    displayName: "Prepare analysis on SonarQube"
+    inputs:
+      SonarQube: SonarQube
+      scannerMode: CLI
+      configMode: manual
+      cliProjectKey: "$(Build.DefinitionName)"
+      cliProjectName: "$(Build.DefinitionName)"
+      cliProjectVersion: "$(Build.BuildNumber)"
+      cliSources: "$(System.DefaultWorkingDirectory)"
+      extraProperties: |
+        sonar.projectBaseDir=$(System.DefaultWorkingDirectory)
+        sonar.exclusions=node_modules/**,coverage/**,examples/**,docs/**,reports/**,**/node_modules/**,**/*.js
+        sonar.sources=.
+        #sonar.sourceEncoding=UTF-8
+        #sonar.tests=src
+        #sonar.test.inclusions=**/*.test.ts
+        #sonar.testExecutionReportPaths=test-reports/test-reporter.xml
+        #sonar.typescript.lcov.reportPaths=coverage/lcov.info
+        #sonar.coverage.exclusions=test/**,*.test.ts,**/*.test.ts
+
+  - task: Npm@1
+    displayName: "Install"
+    inputs:
+      command: "install"
+      workingDir: "$(System.DefaultWorkingDirectory)"
+      verbose: false
+
+  - task: Npm@1
+    displayName: "Build"
+    inputs:
+      command: custom
+      workingDir: "$(System.DefaultWorkingDirectory)"
+      verbose: false
+      customCommand: run build
+
+  - task: SonarQubeAnalyze@7
+    displayName: "Run Code Analysis"
+
+  - task: Npm@1
+    displayName: "Package"
+    inputs:
+      command: custom
+      workingDir: "$(System.DefaultWorkingDirectory)"
+      verbose: false
+      customCommand: run package
+
+  - task: ms-devlabs.vsts-developer-tools-build-tasks.tfx-installer-build-task.TfxInstaller@1
+    displayName: "Install tfx-cli"
+    inputs:
+      version: v0.24.x
+
+  - task: ms-devlabs.vsts-developer-tools-build-tasks.package-extension-build-task.PackageVSTSExtension@1
+    displayName: "Package Extension"
+    inputs:
+      rootFolder: "$(System.DefaultWorkingDirectory)"
+      outputPath: "$(Build.StagingDirectory)"
+      publisherId: "$(Extension.Publisher)"
+      extensionId: "$(Extension.Id)"
+      extensionName: "$(Extension.Name)"
+      extensionVersion: "$(Extension.Version)"
+      updateTasksVersion: true
+      extensionVisibility: private
+      extensionPricing: free
+
+  - task: PublishBuildArtifacts@1
+    displayName: "Publish Artifact to VSTS"
+    inputs:
+      PathtoPublish: $(build.artifactstagingdirectory)
+      ArtifactName: Artifact
+      

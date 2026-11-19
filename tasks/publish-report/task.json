@@ -10,14 +10,15 @@
         "Build"
     ],
     "demands": [],
-    "author": "dpolania",
+    "author": "david",
     "version": {
         "Major": 0,
         "Minor": 0,
-        "Patch": 73
+        "Patch": 75
     },
     "instanceNameFormat": "Publish Report",
-    "inputs": [{
+    "inputs": [
+        {
             "name": "reportName",
             "type": "string",
             "label": "Report Name",
@@ -39,10 +40,19 @@
         }
     ],
     "execution": {
-        "Node10": {
+        "Node24": {
+            "target": "index.js"
+        },
+        "Node20_1": {
             "target": "index.js"
         },
         "Node16": {
+            "target": "index.js"
+        },
+        "Node10": {
+            "target": "index.js"
+        },
+        "Node": {
             "target": "index.js"
         }
     }
